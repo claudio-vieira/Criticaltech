@@ -21,6 +21,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -62,32 +63,42 @@ fun NewsListScreen(
             }
         )
 
-        when {
-            uiState.isLoading -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
+        PullToRefreshBox(
+            isRefreshing = viewModel.uiState.collectAsState().value.isLoading,
+            onRefresh = {
+                viewModel.refreshNews()
+            },
+        ) {
+
+            when {
+                uiState.isLoading -> {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
                 }
-            }
-            uiState.error.isNotEmpty() -> {
-                ErrorScreen(
-                    message = uiState.error,
-                    onRetry = { viewModel.loadNews() }
-                )
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(uiState.articles) { article ->
-                        NewsItem(
-                            article = article,
-                            onClick = { onArticleClick(article) }
-                        )
+
+                uiState.error.isNotEmpty() -> {
+                    ErrorScreen(
+                        message = uiState.error,
+                        onRetry = { viewModel.loadNews() }
+                    )
+                }
+
+                else -> {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(uiState.articles) { article ->
+                            NewsItem(
+                                article = article,
+                                onClick = { onArticleClick(article) }
+                            )
+                        }
                     }
                 }
             }

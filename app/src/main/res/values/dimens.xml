@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Spacing -->
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">12dp</dimen>
+    <dimen name="spacing_large">16dp</dimen>
+
+    <!-- Content padding -->
+    <dimen name="content_padding">16dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+
+    <!-- Item spacing -->
+    <dimen name="item_spacing">16dp</dimen>
+
+    <!-- Card properties -->
+    <dimen name="card_elevation">4dp</dimen>
+
+    <!-- Image dimensions -->
+    <dimen name="article_image_height">200dp</dimen>
+    <dimen name="article_detail_image_height">250dp</dimen>
+    <dimen name="image_corner_radius">8dp</dimen>
+    <dimen name="detail_image_corner_radius">12dp</dimen>
+
+    <!-- Biometric screen -->
+    <dimen name="biometric_screen_padding">24dp</dimen>
+    <dimen name="biometric_icon_size">80dp</dimen>
+</resources>

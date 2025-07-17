@@ -31,13 +31,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.criticaltech.BuildConfig
+import com.example.criticaltech.R
 import com.example.criticaltech.domain.Article
 import com.example.criticaltech.presentation.viewmodel.NewsViewModel
 import java.time.Instant
@@ -103,8 +105,8 @@ fun NewsListScreen(
                     }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        contentPadding = PaddingValues(dimensionResource(R.dimen.content_padding)),
+                        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.item_spacing))
                     ) {
                         items(uiState.articles) { article ->
                             NewsItem(
@@ -128,10 +130,10 @@ fun NewsItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() },
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.card_elevation))
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(dimensionResource(R.dimen.card_padding))
         ) {
             article.urlToImage?.let { imageUrl ->
                 AsyncImage(
@@ -139,14 +141,14 @@ fun NewsItem(
                         .data(imageUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.article_image_description),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(8.dp)),
+                        .height(dimensionResource(R.dimen.article_image_height))
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.image_corner_radius))),
                     contentScale = ContentScale.Crop
                 )
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_medium)))
             }
 
             article.title?.let {
@@ -159,7 +161,7 @@ fun NewsItem(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_small)))
 
             article.publishedAt?.let {
                 Text(
@@ -170,7 +172,7 @@ fun NewsItem(
             }
 
             article.description?.let { description ->
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_small)))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
@@ -187,17 +189,17 @@ fun EmptyScreen(onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(dimensionResource(R.dimen.content_padding)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "No data",
+            text = stringResource(R.string.no_data_message),
             style = MaterialTheme.typography.bodyLarge
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(dimensionResource(R.dimen.spacing_medium)))
         Button(onClick = onRetry) {
-            Text("Retry")
+            Text(stringResource(R.string.retry_button))
         }
     }
 }

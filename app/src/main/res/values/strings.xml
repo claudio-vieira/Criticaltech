@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Criticaltech</string>
+
+    <!-- Empty state -->
+    <string name="no_data_message">No data</string>
+    <string name="retry_button">Retry</string>
+
+    <!-- Content descriptions -->
+    <string name="article_image_description">Article image</string>
+    <string name="article_detail_image_description">Article detail image</string>
+    <string name="back_button_description">Back</string>
+    <string name="fingerprint_icon_description">Fingerprint</string>
+
+    <!-- Article detail -->
+    <string name="author_format">By %1$s</string>
+
+    <!-- Biometric authentication -->
+    <string name="biometric_auth_title">Biometric Authentication</string>
+    <string name="biometric_auth_instruction">Please authenticate using your fingerprint</string>
+    <string name="auth_error_title">Authentication Error</string>
+    <string name="auth_failed_message">Authentication failed. Please try again.</string>
+    <string name="try_again_button">Try Again</string>
+
 </resources>

@@ -22,10 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.criticaltech.R
 import com.example.criticaltech.domain.Article
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +50,7 @@ fun ArticleDetailScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onBackClick) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back_button_description))
                 }
             }
         )
@@ -57,8 +59,8 @@ fun ArticleDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(dimensionResource(R.dimen.content_padding)),
+            verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.item_spacing))
         ) {
             article.urlToImage?.let { imageUrl ->
                 AsyncImage(
@@ -66,11 +68,11 @@ fun ArticleDetailScreen(
                         .data(imageUrl)
                         .crossfade(true)
                         .build(),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.article_detail_image_description),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(250.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .height(dimensionResource(R.dimen.article_detail_image_height))
+                        .clip(RoundedCornerShape(dimensionResource(R.dimen.detail_image_corner_radius))),
                     contentScale = ContentScale.Crop
                 )
             }
@@ -93,7 +95,7 @@ fun ArticleDetailScreen(
 
             article.author?.let { author ->
                 Text(
-                    text = "By $author",
+                    text = stringResource(R.string.author_format, author),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

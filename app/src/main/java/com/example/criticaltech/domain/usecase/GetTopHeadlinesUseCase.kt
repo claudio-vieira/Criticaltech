@@ -1,6 +1,6 @@
 package com.example.criticaltech.domain.usecase
 
-import com.example.criticaltech.domain.Article
+import com.example.criticaltech.data.repository.ArticlesState
 import com.example.criticaltech.domain.repository.NewsRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -12,7 +12,7 @@ import javax.inject.Inject
 class GetTopHeadlinesUseCase @Inject constructor(
     private val repository: NewsRepository
 ) {
-    operator fun invoke(source: String): Flow<List<Article>> {
+    operator fun invoke(source: String): Flow<ArticlesState> {
         return repository.getTopHeadlines(source)
     }
 }

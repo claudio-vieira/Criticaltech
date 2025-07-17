@@ -1,11 +1,14 @@
 package com.example.criticaltech.viewmodel
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.example.criticaltech.BuildConfig
+import com.example.criticaltech.data.repository.ArticlesState
 import com.example.criticaltech.domain.Article
 import com.example.criticaltech.domain.Source
+import com.example.criticaltech.domain.repository.NewsRepository
 import com.example.criticaltech.domain.usecase.GetTopHeadlinesUseCase
-import com.example.criticaltech.domain.usecase.RefreshNewsUseCase
 import com.example.criticaltech.presentation.viewmodel.NewsViewModel
+import com.example.criticaltech.util.Constants.API_ERROR_MESSAGE
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertFalse
 import junit.framework.TestCase.assertTrue
@@ -14,6 +17,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -23,7 +27,6 @@ import org.junit.Rule
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 
 @ExperimentalCoroutinesApi
@@ -35,10 +38,10 @@ class NewsViewModelTest {
     private val testDispatcher = UnconfinedTestDispatcher()
 
     @Mock
-    private lateinit var getTopHeadlinesUseCase: GetTopHeadlinesUseCase
+    private lateinit var repository: NewsRepository
 
     @Mock
-    private lateinit var refreshNewsUseCase: RefreshNewsUseCase
+    private lateinit var getTopHeadlinesUseCase: GetTopHeadlinesUseCase
 
     private lateinit var viewModel: NewsViewModel
 
@@ -69,6 +72,7 @@ class NewsViewModelTest {
     @Before
     fun setUp() {
         MockitoAnnotations.openMocks(this)
+        getTopHeadlinesUseCase = GetTopHeadlinesUseCase(repository)
         Dispatchers.setMain(testDispatcher)
     }
 
@@ -78,30 +82,18 @@ class NewsViewModelTest {
     }
 
     @Test
-    fun `initial state should load empty articles and stop loading`() = runTest {
-        // Given
-        whenever(getTopHeadlinesUseCase("bbc-news"))
-            .thenReturn(flowOf(emptyList()))
-
-        // When
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
-
-        // Then
-        with(viewModel.uiState.value) {
-            assertFalse(isLoading)
-            assertTrue(articles.isEmpty())
-            assertEquals("", error)
-        }
-    }
-
-    @Test
     fun `loadNews should update state with articles and stop loading`() = runTest {
+        val articlesState = ArticlesState.Success(testArticles)
+
         // Given
-        whenever(getTopHeadlinesUseCase("bbc-news"))
-            .thenReturn(flowOf(testArticles))
+        whenever(getTopHeadlinesUseCase(BuildConfig.NEWS_SOURCE))
+            .thenReturn(flowOf(articlesState))
 
         // When
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
+        viewModel = NewsViewModel(getTopHeadlinesUseCase)
+
+        // Allow the flow to be collected
+        advanceUntilIdle()
 
         // Then
         with(viewModel.uiState.value) {
@@ -113,12 +105,14 @@ class NewsViewModelTest {
 
     @Test
     fun `loadNews should handle empty response correctly`() = runTest {
+        val articlesState = ArticlesState.Success(emptyList())
+
         // Given
-        whenever(getTopHeadlinesUseCase("bbc-news"))
-            .thenReturn(flowOf(emptyList()))
+        whenever(getTopHeadlinesUseCase(BuildConfig.NEWS_SOURCE))
+            .thenReturn(flowOf(articlesState))
 
         // When
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
+        viewModel = NewsViewModel(getTopHeadlinesUseCase)
 
         // Then
         with(viewModel.uiState.value) {
@@ -131,15 +125,13 @@ class NewsViewModelTest {
     @Test
     fun `loadNews should handle flow errors and update error state`() = runTest {
         // Given
-        val errorMessage = "Network error"
-        val errorFlow = flow<List<Article>> {
-            throw Exception(errorMessage)
-        }
-        whenever(getTopHeadlinesUseCase("bbc-news"))
-            .thenReturn(errorFlow)
+        val errorMessage = API_ERROR_MESSAGE
+        val articlesState = ArticlesState.Error(emptyList(), errorMessage)
+        whenever(getTopHeadlinesUseCase(BuildConfig.NEWS_SOURCE))
+            .thenReturn(flowOf(articlesState))
 
         // When
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
+        viewModel = NewsViewModel(getTopHeadlinesUseCase)
 
         // Then
         with(viewModel.uiState.value) {
@@ -155,41 +147,20 @@ class NewsViewModelTest {
         val cachedArticles = listOf(testArticles[0])
         val freshArticles = testArticles
         val multiEmissionFlow = flow {
-            emit(cachedArticles) // First emission (cached)
-            emit(freshArticles)  // Second emission (fresh from network)
+            emit(ArticlesState.Success(cachedArticles)) // First emission (cached)
+            emit(ArticlesState.Success(freshArticles))  // Second emission (fresh from network)
         }
-        whenever(getTopHeadlinesUseCase("bbc-news"))
+        whenever(getTopHeadlinesUseCase(BuildConfig.NEWS_SOURCE))
             .thenReturn(multiEmissionFlow)
 
         // When
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
+        viewModel = NewsViewModel(getTopHeadlinesUseCase)
 
         // Then - Should have the latest emission
         with(viewModel.uiState.value) {
             assertEquals(freshArticles.sortedByDescending { it.publishedAt }, articles)
             assertFalse(isLoading)
             assertEquals("", error)
-        }
-    }
-
-    @Test
-    fun `refreshNews should handle refresh errors`() = runTest {
-        // Given
-        whenever(getTopHeadlinesUseCase("bbc-news"))
-            .thenReturn(flowOf(testArticles))
-        whenever(refreshNewsUseCase("bbc-news")).thenAnswer {
-            throw Exception("Refresh failed")
-        }
-        viewModel = NewsViewModel(getTopHeadlinesUseCase, refreshNewsUseCase)
-
-        // When
-        viewModel.refreshNews()
-
-        // Then
-        verify(refreshNewsUseCase).invoke("bbc-news")
-        with(viewModel.uiState.value) {
-            assertFalse(isLoading)
-            assertEquals("Refresh failed", error)
         }
     }
 

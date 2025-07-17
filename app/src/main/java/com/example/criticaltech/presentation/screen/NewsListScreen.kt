@@ -1,5 +1,6 @@
-package com.example.criticaltech.presentation.ui
+package com.example.criticaltech.presentation.screen
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.criticaltech.BuildConfig
 import com.example.criticaltech.domain.Article
 import com.example.criticaltech.presentation.viewmodel.NewsViewModel
 import java.time.Instant
@@ -56,7 +58,7 @@ fun NewsListScreen(
         TopAppBar(
             title = {
                 Text(
-                    text = "bbc-news", // TODO get from Builgcondig later
+                    text = BuildConfig.SOURCE_NAME,
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -66,7 +68,7 @@ fun NewsListScreen(
         PullToRefreshBox(
             isRefreshing = viewModel.uiState.collectAsState().value.isLoading,
             onRefresh = {
-                viewModel.refreshNews()
+                viewModel.loadNews()
             },
         ) {
 
@@ -80,14 +82,25 @@ fun NewsListScreen(
                     }
                 }
 
-                uiState.error.isNotEmpty() -> {
-                    ErrorScreen(
-                        message = uiState.error,
+                uiState.articles.isEmpty() -> {
+                    if (uiState.error.isNotEmpty()) {
+                        Toast.makeText(
+                            LocalContext.current,
+                            uiState.error,
+                            Toast.LENGTH_LONG).show()
+                    }
+                    EmptyScreen(
                         onRetry = { viewModel.loadNews() }
                     )
                 }
 
                 else -> {
+                    if (uiState.error.isNotEmpty()) {
+                        Toast.makeText(
+                            LocalContext.current,
+                            uiState.error,
+                            Toast.LENGTH_LONG).show()
+                    }
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp),
@@ -170,10 +183,7 @@ fun NewsItem(
 }
 
 @Composable
-fun ErrorScreen(
-    message: String,
-    onRetry: () -> Unit
-) {
+fun EmptyScreen(onRetry: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -182,9 +192,8 @@ fun ErrorScreen(
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Error: $message",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
+            text = "No data",
+            style = MaterialTheme.typography.bodyLarge
         )
         Spacer(modifier = Modifier.height(16.dp))
         Button(onClick = onRetry) {

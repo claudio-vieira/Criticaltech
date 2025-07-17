@@ -30,6 +30,26 @@ android {
             )
         }
     }
+
+    flavorDimensions += "source"
+    productFlavors {
+        create("bbc") {
+            dimension = "source"
+            buildConfigField("String", "NEWS_SOURCE", "\"bbc-news\"")
+            buildConfigField("String", "SOURCE_NAME", "\"BBC News\"")
+        }
+        create("blasting") {
+            dimension = "source"
+            buildConfigField("String", "NEWS_SOURCE", "\"blasting-news-br\"")
+            buildConfigField("String", "SOURCE_NAME", "\"Blasting News (BR)\"")
+        }
+        create("espn") {
+            dimension = "source"
+            buildConfigField("String", "NEWS_SOURCE", "\"espn\"")
+            buildConfigField("String", "SOURCE_NAME", "\"ESPN\"")
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -39,6 +59,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -66,6 +87,8 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    // Biometric
+    implementation(libs.androidx.biometric)
 
     testImplementation(libs.junit)
     testImplementation(libs.mockito.core)

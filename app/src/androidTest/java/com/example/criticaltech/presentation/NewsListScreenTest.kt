@@ -7,7 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.criticaltech.domain.Article
 import com.example.criticaltech.domain.Source
-import com.example.criticaltech.presentation.ui.NewsItem
+import com.example.criticaltech.presentation.screen.NewsItem
 import com.example.criticaltech.presentation.ui.theme.CriticaltechTheme
 import org.junit.Rule
 import org.junit.Test

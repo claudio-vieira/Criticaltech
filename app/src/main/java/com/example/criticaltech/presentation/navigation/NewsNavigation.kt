@@ -10,7 +10,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.criticaltech.domain.Article
 import com.example.criticaltech.domain.Source
 import com.example.criticaltech.presentation.screen.ArticleDetailScreen
-import com.example.criticaltech.presentation.ui.NewsListScreen
+import com.example.criticaltech.presentation.screen.NewsListScreen
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

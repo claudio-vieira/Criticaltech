@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.criticaltech.data.local.NewsDao
 import com.example.criticaltech.data.local.NewsDatabase
+import com.example.criticaltech.util.Constants.DATABASE_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,7 +22,7 @@ object DatabaseModule {
         return Room.databaseBuilder(
             context,
             NewsDatabase::class.java,
-            "criticaltech_database"
+            DATABASE_NAME
         ).build()
     }
 

@@ -27,7 +27,6 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.criticaltech.domain.Article
-import com.example.criticaltech.presentation.ui.formatDate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

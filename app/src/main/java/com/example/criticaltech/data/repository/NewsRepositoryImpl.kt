@@ -4,28 +4,42 @@ import com.example.criticaltech.data.local.NewsDao
 import com.example.criticaltech.data.mapper.toArticleEntity
 import com.example.criticaltech.data.mapper.toDomain
 import com.example.criticaltech.data.remote.NewsApi
-import com.example.criticaltech.domain.Article
 import com.example.criticaltech.domain.repository.NewsRepository
+import com.example.criticaltech.util.Constants.API_ERROR_MESSAGE
+import com.example.criticaltech.util.Constants.NO_INTERNET_CONNECTION
+import com.example.criticaltech.util.NetworkUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class NewsRepositoryImpl @Inject constructor(
     private val newsApi: NewsApi,
-    private val newsDao: NewsDao
+    private val newsDao: NewsDao,
+    private val networkUtils: NetworkUtils
 ) : NewsRepository {
 
-    override fun getTopHeadlines(source: String): Flow<List<Article>> {
-        return newsDao.getAllArticles().map { entities ->
-            entities.map { it.toDomain() }
-        }.onStart {
-            // Auto-refresh if database is empty
-            if (newsDao.getAllArticles().first().isEmpty()) {
+    override fun getTopHeadlines(source: String): Flow<ArticlesState> {
+        return flow {
+            val cachedArticles = newsDao.getAllArticles().first().map { it.toDomain() }
+
+            if (!networkUtils.isNetworkAvailable()) {
+                emit(ArticlesState.NoNetwork(cachedArticles, NO_INTERNET_CONNECTION))
+                return@flow
+            }
+
+            runCatching {
                 refreshTopHeadlines(source)
+            }.onFailure { exception ->
+                emit(ArticlesState.Error(cachedArticles, API_ERROR_MESSAGE))
+                return@flow
+            }
+
+            //Emit fresh data after successful refresh
+            newsDao.getAllArticles().first().map { it.toDomain() }.let { articles ->
+                emit(ArticlesState.Success(articles))
             }
         }
     }
@@ -37,8 +51,8 @@ class NewsRepositoryImpl @Inject constructor(
             newsDao.clearAllArticles()
             newsDao.insertArticles(entities)
         } catch (e: Exception) {
-            // TODO Handle error later
-            throw e
+            e.printStackTrace()
+            throw Exception(API_ERROR_MESSAGE)
         }
     }
 }

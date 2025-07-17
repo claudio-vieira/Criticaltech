@@ -1,5 +1,6 @@
 package com.example.criticaltech.domain
 
+import com.example.criticaltech.data.repository.ArticlesState
 import com.example.criticaltech.domain.repository.NewsRepository
 import com.example.criticaltech.domain.usecase.GetTopHeadlinesUseCase
 import junit.framework.TestCase.assertEquals
@@ -40,13 +41,14 @@ class GetTopHeadlinesUseCaseTest {
                 content = "Test Content"
             )
         )
-        whenever(repository.getTopHeadlines(source)).thenReturn(flowOf(articles))
+        val articlesState = ArticlesState.Success(articles)
+        whenever(repository.getTopHeadlines(source)).thenReturn(flowOf(articlesState))
 
         // When
         val result = getTopHeadlinesUseCase(source).toList()
 
         // Then
         assertEquals(1, result.size)
-        assertEquals(articles, result[0])
+        assertEquals(articlesState, result[0])
     }
 }
